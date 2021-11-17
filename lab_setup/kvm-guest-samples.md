@@ -79,7 +79,13 @@ apt install chrony -y
 systemctl disable apparmor
 ```
 
-7. Reboot guest
+7. Disable ufw (firewall)
+
+```bash
+ufw disable
+```
+
+8. Reboot guest
 
 ```bash
 reboot

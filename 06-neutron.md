@@ -38,7 +38,7 @@ source .adminrc
 * Create **neutron** user and add role:
 
 ```bash
-openstack user create --domain default --password-prompt neutron
+openstack user create --domain default --password password123 neutron
 
 openstack role add --project service --user neutron admin
 ```

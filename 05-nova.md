@@ -23,12 +23,12 @@ CREATE DATABASE nova_cell0;
 3. Grant proper access to **nova** user:
 
 ```sql
-GRANT ALL PRIVILEGES ON nova.* TO 'nova_api'@'localhost' identified by 'password123';
-GRANT ALL PRIVILEGES ON nova.* TO 'nova_api'@'%' identified by 'password123';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' identified by 'password123';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' identified by 'password123';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' identified by 'password123';
-GRANT ALL PRIVILEGES ON nova.* TO 'nova_cell0'@'localhost' identified by 'password123';
-GRANT ALL PRIVILEGES ON nova.* TO 'nova_cell0'@'%' identified by 'password123';
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'localhost' identified by 'password123';
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' identified by 'password123';
 ```
 
 ### Prerequisites
@@ -44,7 +44,7 @@ source .adminrc
 * Create **nova** user and add role:
 
 ```bash
-openstack user create --domain default --password-prompt nova
+openstack user create --domain default --password password123 nova
 
 openstack role add --project service --user nova admin
 ```
@@ -85,16 +85,16 @@ grep -Ev '^(#|$)' /etc/nova/nova.conf.bak > /etc/nova/nova.conf
 ```yaml
 [DEFAULT]
 # ...
-transport_url = rabbit://openstack:RABBIT_PASS@controller:5672/
+transport_url = rabbit://openstack:password123@controller:5672/
 my_ip = 10.10.10.11
 
 [api_database]
 # ...
-connection = mysql+pymysql://nova:NOVA_DBPASS@controller/nova_api
+connection = mysql+pymysql://nova:password123@controller/nova_api
 
 [database]
 # ...
-connection = mysql+pymysql://nova:NOVA_DBPASS@controller/nova
+connection = mysql+pymysql://nova:password123@controller/nova
 
 [api]
 # ...
@@ -113,8 +113,8 @@ username = nova
 password = password123
 
 [vnc]
-enabled = true
 # ...
+enabled = true
 server_listen = $my_ip
 server_proxyclient_address = $my_ip
 
@@ -133,9 +133,6 @@ auth_url = http://controller:5000/v3
 username = placement
 password = password123
 ```
-
-* Remove **log_dir** from **[DEFAULT]** section (packaging bug: TODO FIX)
-* Ensure oslo lock dir exists (TODO CHECK)
 
 3. Populate database:
 

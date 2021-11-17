@@ -18,11 +18,12 @@ mysql
 CREATE DATABASE placement;
 ```
 
-3. Grant proper access to **placement** user:
+3. Grant proper access to **placement** user and exit:
 
 ```sql
 GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'%' identified by 'password123';
+exit
 ```
 
 ### Prerequisites
@@ -38,7 +39,7 @@ source .adminrc
 * Create **placement** user and add role:
 
 ```bash
-openstack user create --domain default --password-prompt placement
+openstack user create --domain default --password password123 placement
 
 openstack role add --project service --user placement admin
 ```

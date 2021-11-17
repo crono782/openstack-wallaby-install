@@ -18,11 +18,12 @@ mysql
 CREATE DATABASE glance;
 ```
 
-3. Grant proper access to **glance** user:
+3. Grant proper access to **glance** user and exit:
 
 ```sql
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' identified by 'password123';
+exit
 ```
 
 ### Prerequisites
@@ -38,7 +39,7 @@ source .adminrc
 * Create **glance** user and add role:
 
 ```bash
-openstack user create --domain default --password-prompt glance
+openstack user create --domain default --password password123 glance
 
 openstack role add --project service --user glance admin
 ```
@@ -103,7 +104,7 @@ flavor = keystone
 
 [glance_store]
 # ...
-default_store = file
+default_backend = file
 
 [file]
 # ...

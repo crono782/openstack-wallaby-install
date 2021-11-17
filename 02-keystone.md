@@ -18,11 +18,12 @@ mysql
 CREATE DATABASE keystone;
 ```
 
-3. Grant proper access to **keystone** user:
+3. Grant proper access to **keystone** user and exit:
 
 ```sql
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' identified by 'password123';
+exit
 ```
 
 ### Install and configure componenets
@@ -110,26 +111,32 @@ export OS_IDENTITY_API_VERSION=3
 
 ### Create domain, projects, users, and roles
 
-1. Create service project
+1. Source .adminrc
+
+```bash
+source ~/.adminrc
+```
+
+2. Create service project
 
 ```bash
 openstack project create --domain default \
   --description "Service Project" service
 ```
 
-2. Create demo project, user, and role
+3. Create demo project, user, and role
 
 ```bash
 openstack project create --domain default \
   --description "Demo Project" demoproject
 
 openstack user create --domain default \
-  --password-prompt demouser
+  --password password123 demouser
 
 openstack role create demorole
 ```
 
-3. Assign demorole to demoproject and demouser
+4. Assign demorole to demoproject and demouser
 
 ```bash
 openstack role add --project demoproject --user demouser demorole
