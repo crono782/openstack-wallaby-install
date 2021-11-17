@@ -8,11 +8,17 @@
 
 1. Install packages:
 
-```
+```bash
 apt install mariadb-server python3-pymysql -y
 ```
 
-2. Create and edit **/etc/mysql/mariadb.conf.d/99-openstack.cnf**
+2. Run mysql setup:
+
+```bash
+mysql_secure_installation
+```
+
+3. Create and edit **/etc/mysql/mariadb.conf.d/99-openstack.cnf**
 
 ```yaml
 [mysqld]
