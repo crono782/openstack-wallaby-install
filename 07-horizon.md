@@ -22,7 +22,7 @@ CACHES = {
     }
 }
 
-OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/identity/v3" % OPENSTACK_HOST
 
 OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
 
@@ -50,7 +50,7 @@ OPENSTACK_NEUTRON_NETWORK = {
 TIME_ZONE = "TIME_ZONE"
 ```
 
-* Modify file **/etc/apache2/conf-available/openstack-dashboard.conf**:
+* Modify file **/etc/apache2/conf-available/openstack-dashboard.conf** if line is not present:
 
 ```yaml
 WSGIApplicationGroup %{GLOBAL}
