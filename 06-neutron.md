@@ -23,6 +23,7 @@ CREATE DATABASE neutron;
 ```sql
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' identified by 'password123';
+exit
 ```
 
 ### Create Openstack items
@@ -90,7 +91,7 @@ connection = mysql+pymysql://neutron:password123@controller/neutron
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = true
-transport_url = rabbit://openstack:RABBIT_PASS@controller
+transport_url = rabbit://openstack:password123@controller
 auth_strategy = keystone
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
@@ -175,7 +176,7 @@ user_domain_name = default
 region_name = RegionOne
 project_name = service
 username = neutron
-password = NEUTRON_PASS
+password = password123
 service_metadata_proxy = true
 metadata_proxy_shared_secret = s3cr3t_m3tadat4
 ```
@@ -376,7 +377,7 @@ grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak > /etc/neutron/neutron.conf
 ```yaml
 [DEFAULT]
 # ...
-transport_url = rabbit://openstack:RABBIT_PASS@controller
+transport_url = rabbit://openstack:password123@controller
 auth_strategy = keystone
 
 [database]

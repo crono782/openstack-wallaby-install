@@ -12,13 +12,7 @@
 apt install mariadb-server python3-pymysql -y
 ```
 
-2. Run mysql setup:
-
-```bash
-mysql_secure_installation
-```
-
-3. Create and edit **/etc/mysql/mariadb.conf.d/99-openstack.cnf**
+2. Create and edit **/etc/mysql/mariadb.conf.d/99-openstack.cnf**
 
 ```yaml
 [mysqld]
@@ -36,6 +30,12 @@ character-set-server = utf8
 
 ```
 service mysql restart
+```
+
+2. Run mysql setup:
+
+```bash
+mysql_secure_installation
 ```
 
 ## Message Queue

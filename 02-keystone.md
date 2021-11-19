@@ -101,7 +101,7 @@ service apache2 restart
 
 ```yaml
 export OS_USERNAME=admin
-export OS_PASSWORD=ADMIN_PASS
+export OS_PASSWORD=password123
 export OS_PROJECT_NAME=admin
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_NAME=Default
@@ -148,7 +148,7 @@ openstack role add --project demoproject --user demouser demorole
 
 ```yaml
 export OS_USERNAME=demouser
-export OS_PASSWORD=DEMO_PASS
+export OS_PASSWORD=password123
 export OS_PROJECT_NAME=demoproject
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_NAME=Default

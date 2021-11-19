@@ -29,6 +29,7 @@ GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' identified by 'password123'
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' identified by 'password123';
 GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'localhost' identified by 'password123';
 GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' identified by 'password123';
+exit
 ```
 
 ### Prerequisites

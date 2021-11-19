@@ -40,6 +40,12 @@ virt-install -n os-network --os-type Linux --os-variant ubuntu20.04 --ram 2048 -
 virt-install --name os-ceph --os-type Linux --os-variant centos7.0 --ram 4096 --vcpus 1 --import --disk /data/images/os-ceph.qcow2 --disk /data/disks/os-ceph-data1.qcow2 --disk /data/disks/os-ceph-data2.qcow2 --disk /data/disks/os-ceph-data3.qcow2 --disk /data/disks/os-ceph-data4.qcow2 --network bridge:br0 --graphics vnc --noautoconsole
 ```
 
+## Disable cloud-init
+
+```bash
+touch /etc/cloud/cloud-init.disabled
+```
+
 ## Add console output
 
 1.  Add the following to **/etc/default/grub**:
