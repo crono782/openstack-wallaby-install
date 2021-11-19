@@ -152,7 +152,7 @@ service apache2 restart
 apt install lvm2 thin-provisioning-tools tgt -y
 ```
 
-* NOTE: docs don't call for installing tgt, but should be required. tgt conf file for cinder wasn't created. maybe caused by coupling the installs. Decoupling here.
+* NOTE: Official docs give conflicting tech stacks. either choose tgt or lio. tgtd usage outlined here, if using lio, then make appropriate changes and may need to install python-rtslib. Had issues using lio, unsure why yet.
 
 ```bash
 apt install cinder-volume -y
