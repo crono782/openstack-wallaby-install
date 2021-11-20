@@ -183,4 +183,55 @@ apt install python3-heat-dashboard -y
 service apache2 restart
 ```
 
+### Create basic template to **demo.yml**
 
+```yaml
+heat_template_version: 2021-04-16
+
+description: >
+    Simple template to deploy a single compute instance.
+    Nothing special, just for testing.
+
+parameters:
+  NetID:
+    type: string
+    description: Network ID to use for the instance.
+
+resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      key_name: my_key
+      image: cirros
+      flavor: m1.micro
+      networks:
+        - network: { get_param: NetID }
+
+outputs:
+  instance_name:
+    description: Name of the instance
+    value: { get_attr: [ server, name ]}
+  instance_ip:
+    description: IP address of the instance.
+    value: { get_attr: [ server, first_address ] }
+```
+
+3. create a stack
+
+```
+export NET_ID=$(openstack network list --name selfservice -c ID -f value)
+
+openstack stack create -t demo-template.yml --parameter "NetID=$NET_ID" stack
+```
+
+4. Check output
+
+```
+openstack stack list
+
+openstack stack output show --all stack
+
+openstack server list
+
+openstack stack delete --yes stack
+```
