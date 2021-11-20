@@ -90,6 +90,13 @@ openstack role create heat_stack_user
 apt-get install heat-api heat-api-cfn heat-engine -y
 ```
 
+* this was required to solve errors for missing modules
+
+```
+apt install python3-vitrageclient python3-zunclient -y
+```
+
+
 2. Backup an sanitize **/etc/heat/heat.conf**:
 
 ```bash
@@ -164,10 +171,10 @@ openstack orchestration service list
 
 ### Install horizon UI
 
-1. install packages (TODO verify this package)
+1. install packages
 
 ```
-apt heat-dashboard-common -y
+apt install python3-heat-dashboard -y
 ```
 
 2. restart apache
