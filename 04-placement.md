@@ -2,7 +2,7 @@
 
 > -
 
-## CONTROLLER NODE
+## 1. CONTROLLER NODE
 
 ### Database setup
 
@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'%' identified by 'password12
 exit
 ```
 
-### Prerequisites
+### Create openstack objects
 
 1. Source .adminrc
 
@@ -78,10 +78,6 @@ grep -Ev '^(#|$)' /etc/placement/placement.conf.bak > /etc/placement/placement.c
 2. Edit **/etc/placement/placement.conf** sections:
 
 ```yaml
-[placement_database]
-# ...
-connection = mysql+pymysql://placement:password123@controller/placement
-
 [api]
 # ...
 auth_strategy = keystone
@@ -96,6 +92,11 @@ user_domain_name = Default
 project_name = service
 username = placement
 password = password123
+
+[placement_database]
+# ...
+# remove other connections
+connection = mysql+pymysql://placement:password123@controller/placement
 ```
 
 3. Populate database:
@@ -104,9 +105,7 @@ password = password123
 su -s /bin/sh -c "placement-manage db sync" placement
 ```
 
-### Finalize installation
-
-1. Restart web server:
+4. Restart web server:
 
 ```bash
 service apache2 restart

@@ -2,7 +2,7 @@
 
 > ![Glance logo](/images/glance.png)
 
-## CONTROLLER NODE
+## 1. CONTROLLER NODE
 
 ### Database setup
 
@@ -12,7 +12,7 @@
 mysql
 ```
 
-2. Create **keystone** database:
+2. Create **glance** database:
 
 ```sql
 CREATE DATABASE glance;
@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' identified by 'password123';
 exit
 ```
 
-### Prerequisites
+### Create openstack objects
 
 1. Source .adminrc
 
@@ -60,7 +60,7 @@ for i in public internal admin; \
   done
 ```
 
-### Install and configure componenets
+### Install and configure components
 
 1. Install packages:
 
@@ -80,11 +80,23 @@ grep -Ev '^(#|$)' /etc/glance/glance-api.conf.bak > /etc/glance/glance-api.conf
 ```yaml
 [DEFAULT]
 # ...
+# which backends to use key:value pairs
 enabled_backends = file:file
 
 [database]
 # ...
+# remove other connections
 connection = mysql+pymysql://glance:password123@controller/glance
+
+[file]
+# ...
+# file store config
+filesystem_store_datadir = /var/lib/glance/images/
+
+[glance_store]
+# ...
+# basic glance settings
+default_backend = file
 
 [keystone_authtoken]
 # ...
@@ -101,14 +113,6 @@ password = password123
 [paste_deploy]
 # ...
 flavor = keystone
-
-[glance_store]
-# ...
-default_backend = file
-
-[file]
-# ...
-filesystem_store_datadir = /var/lib/glance/images/
 ```
 
 3. Populate database:
@@ -117,9 +121,7 @@ filesystem_store_datadir = /var/lib/glance/images/
 su -s /bin/sh -c "glance-manage db_sync" glance
 ```
 
-### Finalize installation
-
-1. Restart image service:
+4. Restart glance api service:
 
 ```bash
 service glance-api restart
@@ -148,7 +150,7 @@ openstack image create \
   --public cirros
 ```
 
-4. Verify
+4. Verify image
 
 ```bash
 openstack image list

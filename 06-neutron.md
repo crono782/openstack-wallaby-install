@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' identified by 'password123';
 exit
 ```
 
-### Create Openstack items
+### Create Openstack objects
 
 1. Source .adminrc
 
@@ -62,30 +62,22 @@ for i in public internal admin; \
 
 ### Install and configure componenets
 
-#### Install Packages
-
-* Install packages:
+1. Install packages:
 
 ```bash
 apt install neutron-server neutron-plugin-ml2 -y
 ```
 
-#### Configure server
-
-1. Backup an sanitize **/etc/neutron/neutron.conf**:
+2. Backup an sanitize **/etc/neutron/neutron.conf**:
 
 ```bash
 cp -p /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
 grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak > /etc/neutron/neutron.conf
 ```
 
-2. Edit **/etc/neutron/neutron.conf** sections:
+3. Edit **/etc/neutron/neutron.conf** sections:
 
 ```yaml
-[database]
-# ...
-connection = mysql+pymysql://neutron:password123@controller/neutron
-
 [DEFAULT]
 # ...
 core_plugin = ml2
@@ -95,6 +87,11 @@ transport_url = rabbit://openstack:password123@controller
 auth_strategy = keystone
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
+
+[database]
+# ...
+# remove other connections
+connection = mysql+pymysql://neutron:password123@controller/neutron
 
 [keystone_authtoken]
 # ...
@@ -124,7 +121,7 @@ password = password123
 lock_path = /var/lib/neutron/tmp
 ```
 
-3. Fix packaging bug:
+4. Fix packaging bug:
 
 ```bash
 install -d /var/lib/neutron/tmp -o neutron -g neutron
@@ -162,9 +159,9 @@ vni_ranges = 1:1000
 enable_ipset = true
 ```
 
-#### Configure compute service to use networking service
+#### Configure nova to use neutron
 
-* Edit **/etc/nova/nova.conf** sections:
+1. Edit **/etc/nova/nova.conf** sections:
 
 ```yaml
 [neutron]
@@ -206,8 +203,6 @@ service neutron-server restart
 
 ### Install and configure componenets
 
-#### Configure server
-
 1. Install packages:
 
 ```bash
@@ -248,6 +243,7 @@ password = password123
 
 [oslo_concurrency]
 # ...
+# make sure this dir exists
 lock_path = /var/lib/neutron/tmp
 ```
 
@@ -266,15 +262,15 @@ grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak > /etc/neut
 [linux_bridge]
 physical_interface_mappings = provider:PROVIDER_INTERFACE_NAME
 
-[vxlan]
-enable_vxlan = true
-local_ip = OVERLAY_INTERFACE_IP_ADDRESS
-l2_population = true
-
 [securitygroup]
 # ...
 enable_security_group = true
 firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+
+[vxlan]
+enable_vxlan = true
+local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+l2_population = true
 ```
 
 3. Ensure network bridge filters enabled (br_netfilter kmod):

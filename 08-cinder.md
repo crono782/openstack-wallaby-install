@@ -1,22 +1,22 @@
 # Install Cinder
 
+> ![Cinder logo](/images/cinder.png)
+
 ## 1: CONTROLLER NODE
 
-### Database setup
-
-1. Access database as root:
+* Access database as root:
 
 ```bash
 mysql
 ```
 
-2. Create **cinder** database:
+* Create **cinder** database:
 
 ```sql
 CREATE DATABASE cinder;
 ```
 
-3. Grant proper access to **cinder** user:
+* Grant proper access to **cinder** user:
 
 ```sql
 GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' identified by 'password123';
@@ -24,15 +24,11 @@ GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' identified by 'password123';
 exit
 ```
 
-### Create Openstack items
-
-1. Source .adminrc
+* Source .adminrc
 
 ```bash
 source .adminrc
 ```
-
-2. Create service and creds
 
 * Create **cinder** user and add role:
 
@@ -52,7 +48,7 @@ openstack service create --name cinderv3 \
   --description "Openstack Block Storage" volumev3
 ```
 
-3. Create service API endpoints:
+* Create service API endpoints:
 
 ```bash
 for i in public internal admin; \
@@ -66,24 +62,20 @@ for i in public internal admin; \
   done
 ```
 
-### Install Packages
-
 * Install packages:
 
 ```bash
 apt install cinder-api cinder-scheduler -y
 ```
 
-### Configure server
-
-1. Backup an sanitize **/etc/cinder/cinder.conf**:
+* Backup an sanitize **/etc/cinder/cinder.conf**:
 
 ```bash
 cp -p /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
 grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak > /etc/cinder/cinder.conf
 ```
 
-2. Edit **/etc/cinder/cinder.conf** sections:
+* Edit **/etc/cinder/cinder.conf** sections:
 
 ```yaml
 [database]
@@ -119,22 +111,20 @@ lock_path = /var/lib/cinder/tmp
 install -d /var/lib/cinder/tmp -o cinder -g cinder
 ```
 
-### Populate database
+* Populate database
 
 ```bash
 su -s /bin/sh -c "cinder-manage db sync" cinder
 ```
 
-## Configure compute to use cinder:
-
-* Edit **/etc/nova/nova.conf**:
+* Configure compute to use cinder. Edit **/etc/nova/nova.conf**:
 
 ```yaml
 [cinder]
 os_region_name = RegionOne
 ```
 
-## Finalize install
+* Finalize install
 
 ```bash
 service nova-api restart
@@ -143,8 +133,6 @@ service apache2 restart
 ```
 
 ## 2. STORAGE NODE
-
-### Install Packages
 
 * Install packages:
 
@@ -164,9 +152,7 @@ apt install cinder-volume -y
 echo 'include /var/lib/cinder/volumes/*' >> /etc/tgt/conf.d/cinder.conf
 ```
 
-### Create LVM volumes
-
-* Use appropriate block device name instead of /dev/vdb
+* Create LVM volumes. Use appropriate block device name instead of /dev/vdb
 
 ```bash
 pvcreate /dev/vdb
@@ -174,7 +160,7 @@ pvcreate /dev/vdb
 vgcreate cinder-volumes /dev/vdb
 ```
 
-### Create LVM filter
+* Create LVM filter
 
 ```yaml
 devices {
@@ -188,16 +174,14 @@ filter = [ "a/sdb/", "r/.*/" ]
 filter = [ "a/sda/", "a/sdb/", "r/.*/" ]
 ```
 
-### Configure server
-
-1. Backup an sanitize **/etc/cinder/cinder.conf**:
+* Backup an sanitize **/etc/cinder/cinder.conf**:
 
 ```bash
 cp -p /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
 grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak > /etc/cinder/cinder.conf
 ```
 
-2. Edit **/etc/cinder/cinder.conf** sections:
+* Edit **/etc/cinder/cinder.conf** sections:
 
 ```yaml
 [database]
@@ -241,22 +225,23 @@ target_helper = tgtadm
 lock_path = /var/lib/cinder/tmp
 ```
 
-### Finalize Install
+* Finalize Install
 
 ```bash
 service tgt restart
 service cinder-volume restart
 ```
 
-### Verify Ops
+* Verify Ops
 
 ```bash
 source .adminrc
 
 openstack volume service list
+
+openstack volume create --size 1 test-vol
+
+openstack volume list
+
+openstack volume delete test-vol
 ```
-
-
-
-
-

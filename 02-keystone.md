@@ -2,7 +2,7 @@
 
 > ![Keystone logo](/images/keystone.png)
 
-## CONTROLLER NODE
+## 1. CONTROLLER NODE
 
 ### Database setup
 
@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' identified by 'password123'
 exit
 ```
 
-### Install and configure componenets
+### Install and configure
 
 1. Install packages:
 
@@ -41,7 +41,7 @@ cp -p /etc/keystone/keystone.conf /etc/keystone/keystone.conf.bak
 grep -Ev '^(#|$)' /etc/keystone/keystone.conf.bak > /etc/keystone/keystone.conf
 ```
 
-2. Edit **/etc/keystone/keystone.conf** sections:
+3. Edit **/etc/keystone/keystone.conf** sections:
 
 ```yaml
 [database]
@@ -53,7 +53,7 @@ connection = mysql+pymysql://keystone:password123@controller/keystone
 provider = fernet
 ```
 
-3. Populate database:
+4. Populate database:
 
 ```bash
 su -s /bin/sh -c "keystone-manage db_sync" keystone
@@ -81,15 +81,13 @@ keystone-manage bootstrap --bootstrap-password password123 \
 
 ### Configure Apache HTTP server
 
-* Edit **/etc/apache2/apache2.conf** and add **ServerName** option:
+1. Edit **/etc/apache2/apache2.conf** and add **ServerName** option:
 
 ```yaml
 ServerName controller
 ```
 
-### Finalize installation
-
-* Restart database service:
+2. Restart apache service:
 
 ```bash
 service apache2 restart

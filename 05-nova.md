@@ -2,7 +2,7 @@
 
 > ![Nova logo](/images/nova.png)
 
-## CONTROLLER NODE
+## 1. CONTROLLER NODE
 
 ### Database setup
 
@@ -32,7 +32,7 @@ GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' identified by 'password123';
 exit
 ```
 
-### Prerequisites
+### Create openstack objects
 
 1. Source .adminrc
 
@@ -89,17 +89,19 @@ grep -Ev '^(#|$)' /etc/nova/nova.conf.bak > /etc/nova/nova.conf
 transport_url = rabbit://openstack:password123@controller:5672/
 my_ip = 10.10.10.11
 
+[api]
+# ...
+auth_strategy = keystone
+
 [api_database]
 # ...
+# remove other connections
 connection = mysql+pymysql://nova:password123@controller/nova_api
 
 [database]
 # ...
+# remove other conections
 connection = mysql+pymysql://nova:password123@controller/nova
-
-[api]
-# ...
-auth_strategy = keystone
 
 [keystone_authtoken]
 # ...
@@ -113,14 +115,9 @@ project_name = service
 username = nova
 password = password123
 
-[vnc]
-# ...
-enabled = true
-server_listen = $my_ip
-server_proxyclient_address = $my_ip
-
 [oslo_concurrency]
 # ...
+# ensure this dir exists
 lock_path = /var/lib/nova/tmp
 
 [placement]
@@ -133,6 +130,12 @@ user_domain_name = Default
 auth_url = http://controller:5000/v3
 username = placement
 password = password123
+
+[vnc]
+# ...
+enabled = true
+server_listen = $my_ip
+server_proxyclient_address = $my_ip
 ```
 
 3. Populate database:
@@ -165,9 +168,7 @@ su -s /bin/sh -c "nova-manage db sync" nova
 su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
 ```
 
-### Finalize installation
-
-1. Restart compute services:
+8. Restart compute services:
 
 ```bash
 service nova-api restart
@@ -176,7 +177,7 @@ service nova-conductor restart
 service nova-novncproxy restart
 ```
 
-## COMPUTE NODE
+## 2. COMPUTE NODE
 
 ### Install and configure componenets
 
@@ -193,7 +194,7 @@ cp -p /etc/nova/nova.conf /etc/nova/nova.conf.bak
 grep -Ev '^(#|$)' /etc/nova/nova.conf.bak > /etc/nova/nova.conf
 ```
 
-2. Edit **/etc/nova/nova.conf** sections:
+3. Edit **/etc/nova/nova.conf** sections:
 
 ```yaml
 [DEFAULT]
@@ -204,6 +205,10 @@ my_ip = 10.10.10.12
 [api]
 # ...
 auth_strategy = keystone
+
+[glance]
+# ...
+api_servers = http://controller:9292
 
 [keystone_authtoken]
 # ...
@@ -216,17 +221,6 @@ user_domain_name = Default
 project_name = service
 username = nova
 password = password123
-
-[vnc]
-# ...
-enabled = true
-server_listen = 0.0.0.0
-server_proxyclient_address = $my_ip
-novncproxy_base_url = http://controller:6080/vnc_auto.html
-
-[glance]
-# ...
-api_servers = http://controller:9292
 
 [oslo_concurrency]
 # ...
@@ -242,11 +236,16 @@ user_domain_name = Default
 auth_url = http://controller:5000/v3
 username = placement
 password = password123
+
+[vnc]
+# ...
+enabled = true
+server_listen = 0.0.0.0
+server_proxyclient_address = $my_ip
+novncproxy_base_url = http://controller:6080/vnc_auto.html
 ```
 
-### Finalize installation
-
-1. Determine kvm support
+4. Determine kvm support
 
 ```bash
 grep -Ec '(vmx|svm)' /proc/cpuinfo
@@ -260,15 +259,15 @@ grep -Ec '(vmx|svm)' /proc/cpuinfo
 virt_type = qemu
 ```
 
-2. Restart compute service:
+5. Restart compute service:
 
 ```bash
 service nova-compute restart
 ```
 
-## CONTROLLER NODE
+## 3. CONTROLLER NODE
 
-### Add compute ndoe to cell database
+### Add compute node to cell database
 
 1. Source .adminrc
 

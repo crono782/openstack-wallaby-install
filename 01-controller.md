@@ -1,12 +1,10 @@
 # Controller setup
 
-# CONTROLLER NODE
+# 1. CONTROLLER NODE
 
-## SQL Database
+### MySQL
 
-### Install and configure componenets
-
-1. Install packages:
+1. Install mysql packages:
 
 ```bash
 apt install mariadb-server python3-pymysql -y
@@ -24,72 +22,63 @@ collation-server = utf8_general_ci
 character-set-server = utf8
 ```
 
-### Finalize installation
+3. Finalize MYSQL installation
 
-1. Restart database service:
-
-```
+```bash
 service mysql restart
 ```
 
-2. Run mysql setup:
+4. Run mysql setup:
 
 ```bash
 mysql_secure_installation
 ```
 
-## Message Queue
+### RabbitMQ
 
-### Install and configure components
+1. Install rabbitmq packages:
 
-1. Install packages:
-
-```
+```bash
 apt install rabbitmq-server -y
 ```
 
-2. Add **openstack** user:
+2. Add **openstack** user to rabbitmq:
 
-```
+```bash
 rabbitmqctl add_user openstack password123
 ```
 
-3. Apply permissions for **openstack** user:
-```
+3. Apply permissions for **openstack** rabbitmq user:
+
+```bash
 rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 ```
 
-## Memcached
+### Memcached
 
-### Install and configure components
+1. Install memcached packages:
 
-1. Install packages:
-
-```
+```bash
 apt install memcached python3-memcache -y
 ```
 
 2. Edit **/etc/memcached.conf** and change following setting:
 
-```
+```yaml
 -l 10.10.10.11
 ```
 
-### Finalize installation
+3. Finalize installation
 
-1. Restart memcached service:
-
-```
+```bash
 service memcached restart
 ```
 
 ## Etcd
 
-### Install and configure components
+1. Install etcd packages:
 
-1. Install packages:
-
-```
+```bash
 apt install etcd -y
 ```
 
@@ -107,11 +96,9 @@ ETCD_LISTEN_PEER_URLS="http://10.10.10.11:2380"
 ETCD_LISTEN_CLIENT_URLS="http://10.10.10.11:2379"
 ```
 
-### Finalize installation
-
 1. Enable and restart etcd service:
 
-```
+```bash
 systemctl enable etcd
 systemctl restart etcd
 ```

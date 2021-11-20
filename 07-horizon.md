@@ -1,5 +1,7 @@
 # Horizon
 
+> ![Horizon logo](/images/horizon.png)
+
 ## Install packages
 
 ```bash
@@ -12,6 +14,8 @@ apt install openstack-dashboard -y
 OPENSTACK_HOST = "controller"
 
 ALLOWED_HOSTS = ['*']
+
+# ALLOWED_HOSTS - ['host1', 'host1']
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
