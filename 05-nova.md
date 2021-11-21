@@ -78,7 +78,7 @@ apt install nova-api nova-conductor nova-novncproxy nova-scheduler -y
 
 ```bash
 cp -p /etc/nova/nova.conf /etc/nova/nova.conf.bak
-grep -Ev '^(#|$)' /etc/nova/nova.conf.bak > /etc/nova/nova.conf
+grep -Ev '^(#|$)' /etc/nova/nova.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/nova/nova.conf
 ```
 
 2. Edit **/etc/nova/nova.conf** sections:
@@ -191,7 +191,7 @@ apt install nova-compute -y
 
 ```bash
 cp -p /etc/nova/nova.conf /etc/nova/nova.conf.bak
-grep -Ev '^(#|$)' /etc/nova/nova.conf.bak > /etc/nova/nova.conf
+grep -Ev '^(#|$)' /etc/nova/nova.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/nova/nova.conf
 ```
 
 3. Edit **/etc/nova/nova.conf** sections:

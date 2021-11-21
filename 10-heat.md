@@ -101,7 +101,7 @@ apt install python3-vitrageclient python3-zunclient -y
 
 ```bash
 cp -p /etc/heat/heat.conf /etc/heat/heat.conf.bak
-grep -Ev '^(#|$)' /etc/heat/heat.conf.bak > /etc/heat/heat.conf
+grep -Ev '^(#|$)' /etc/heat/heat.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/heat/heat.conf
 ```
 
 2. Edit **/etc/heat/heat.conf** sections:

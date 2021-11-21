@@ -78,7 +78,7 @@ apt install barbican-api barbican-keystone-listener barbican-worker python3-barb
 
 ```bash
 cp -p /etc/barbican/barbican.conf /etc/barbican/barbican.conf.bak
-grep -Ev '^(#|$)' /etc/barbican/barbican.conf.bak > /etc/barbican/barbican.conf
+grep -Ev '^(#|$)' /etc/barbican/barbican.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/barbican/barbican.conf
 ```
 
 3. Create kek value

@@ -66,7 +66,7 @@ chgrp swift /etc/swift/proxy-server.conf
 
 ```bash
 cp -p /etc/swift/proxy-server.conf /etc/swift/proxy-server.conf.bak
-grep -Ev '^(#|$)' /etc/swift/proxy-server.conf.bak > /etc/swift/proxy-server.conf
+grep -Ev '^(#|$)' /etc/swift/proxy-server.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/swift/proxy-server.conf
 ```
 
 3. Edit **/etc/swift/proxy-server.conf** sections:
@@ -204,7 +204,7 @@ curl -o /etc/swift/object-server.conf https://opendev.org/openstack/swift/raw/br
 
 ```bash
 cp -p /etc/swift/account-server.conf /etc/swift/account-server.conf.bak
-grep -Ev '^(#|$)' /etc/swift/account-server.conf.bak > /etc/swift/account-server.conf
+grep -Ev '^(#|$)' /etc/swift/account-server.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/swift/account-server.conf
 ```
 
 4. edit **/etc/swift/account-server.conf**
@@ -232,7 +232,7 @@ recon_cache_path = /var/cache/swift
 
 ```bash
 cp -p /etc/swift/container-server.conf /etc/swift/container-server.conf.bak
-grep -Ev '^(#|$)' /etc/swift/container-server.conf.bak > /etc/swift/container-server.conf
+grep -Ev '^(#|$)' /etc/swift/container-server.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/swift/container-server.conf
 ```
 
 6. edit **/etc/swift/container-server.conf**
@@ -260,7 +260,7 @@ recon_cache_path = /var/cache/swift
 
 ```bash
 cp -p /etc/swift/object-server.conf /etc/swift/object-server.conf.bak
-grep -Ev '^(#|$)' /etc/swift/object-server.conf.bak > /etc/swift/object-server.conf
+grep -Ev '^(#|$)' /etc/swift/object-server.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/swift/object-server.conf
 ```
 
 8. edit **/etc/swift/object-server.conf**
@@ -360,7 +360,7 @@ curl -o /etc/swift/swift.conf https://opendev.org/openstack/swift/raw/branch/sta
 
 ```bash
 cp -p /etc/swift/swift.conf /etc/swift/swift.conf.bak
-grep -Ev '^(#|$)' /etc/swift/swift.conf.bak > /etc/swift/swift.conf
+grep -Ev '^(#|$)' /etc/swift/swift.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/swift/swift.conf
 ```
 
 3. modify file **/etc/swift/swift.conf**

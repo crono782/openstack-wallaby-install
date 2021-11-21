@@ -38,7 +38,7 @@ apt install keystone -y
 
 ```bash
 cp -p /etc/keystone/keystone.conf /etc/keystone/keystone.conf.bak
-grep -Ev '^(#|$)' /etc/keystone/keystone.conf.bak > /etc/keystone/keystone.conf
+grep -Ev '^(#|$)' /etc/keystone/keystone.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > keystone.conf
 ```
 
 3. Edit **/etc/keystone/keystone.conf** sections:

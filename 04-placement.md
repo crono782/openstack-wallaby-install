@@ -72,7 +72,7 @@ apt install placement-api python3-osc-placement -y
 
 ```bash
 cp -p /etc/placement/placement.conf /etc/placement/placement.conf.bak
-grep -Ev '^(#|$)' /etc/placement/placement.conf.bak > /etc/placement/placement.conf
+grep -Ev '^(#|$)' /etc/placement/placement.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/placement/placement.conf
 ```
 
 2. Edit **/etc/placement/placement.conf** sections:

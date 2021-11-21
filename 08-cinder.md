@@ -72,7 +72,7 @@ apt install cinder-api cinder-scheduler -y
 
 ```bash
 cp -p /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
-grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak > /etc/cinder/cinder.conf
+grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/cinder/cinder.conf
 ```
 
 * Edit **/etc/cinder/cinder.conf** sections:
@@ -178,7 +178,7 @@ filter = [ "a/sda/", "a/sdb/", "r/.*/" ]
 
 ```bash
 cp -p /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
-grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak > /etc/cinder/cinder.conf
+grep -Ev '^(#|$)' /etc/cinder/cinder.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/cinder/cinder.conf
 ```
 
 * Edit **/etc/cinder/cinder.conf** sections:

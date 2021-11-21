@@ -72,7 +72,7 @@ apt install glance python3-boto3 -y
 
 ```bash
 cp -p /etc/glance/glance-api.conf /etc/glance/glance-api.conf.bak
-grep -Ev '^(#|$)' /etc/glance/glance-api.conf.bak > /etc/glance/glance-api.conf
+grep -Ev '^(#|$)' /etc/glance/glance-api.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/glance/glance-api.conf
 ```
 
 2. Edit **/etc/glance/glance-api.conf** sections:

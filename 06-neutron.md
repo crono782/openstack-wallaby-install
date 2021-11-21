@@ -72,7 +72,7 @@ apt install neutron-server neutron-plugin-ml2 -y
 
 ```bash
 cp -p /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak > /etc/neutron/neutron.conf
+grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/neutron.conf
 ```
 
 3. Edit **/etc/neutron/neutron.conf** sections:
@@ -133,7 +133,7 @@ install -d /var/lib/neutron/tmp -o neutron -g neutron
 
 ```bash
 cp -p /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
-grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/ml2_conf.ini.bak > /etc/neutron/plugins/ml2/ml2_conf.ini
+grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/ml2_conf.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/plugins/ml2/ml2_conf.ini
 ```
 
 2. Edit **/etc/neutron/plugins/ml2/ml2_conf.ini** sections:
@@ -215,7 +215,7 @@ neutron-dhcp-agent neutron-metadata-agent -y
 
 ```bash
 cp -p /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak > /etc/neutron/neutron.conf
+grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/neutron.conf
 ```
 
 3. Edit **/etc/neutron/neutron.conf** sections:
@@ -253,7 +253,7 @@ lock_path = /var/lib/neutron/tmp
 
 ```bash
 cp -p /etc/neutron/plugins/ml2/linuxbridge_agent.ini /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak
-grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak > /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/plugins/ml2/linuxbridge_agent.ini
 ```
 
 2. Edit **/etc/neutron/plugins/ml2/linuxbridge_agent.ini** sections:
@@ -286,7 +286,7 @@ sysctl net.bridge.bridge-nf-call-ip6tables
 
 ```bash
 cp -p  /etc/neutron/l3_agent.ini  /etc/neutron/l3_agent.ini.bak
-grep -Ev '^(#|$)'  /etc/neutron/l3_agent.ini.bak >  /etc/neutron/l3_agent.ini
+grep -Ev '^(#|$)'  /etc/neutron/l3_agent.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 >  /etc/neutron/l3_agent.ini
 ```
 
 2. Edit **/etc/neutron/l3_agent.ini** sections:
@@ -303,7 +303,7 @@ interface_driver = linuxbridge
 
 ```bash
 cp -p  /etc/neutron/dhcp_agent.ini  /etc/neutron/dhcp_agent.ini.bak
-grep -Ev '^(#|$)'  /etc/neutron/dhcp_agent.ini.bak >  /etc/neutron/dhcp_agent.ini
+grep -Ev '^(#|$)'  /etc/neutron/dhcp_agent.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 >  /etc/neutron/dhcp_agent.ini
 ```
 
 2. Edit **/etc/neutron/dhcp_agent.ini** sections:
@@ -322,7 +322,7 @@ enable_isolated_metadata = true
 
 ```bash
 cp -p   /etc/neutron/metadata_agent.ini   /etc/neutron/metadata_agent.ini.bak
-grep -Ev '^(#|$)'   /etc/neutron/metadata_agent.ini.bak >   /etc/neutron/metadata_agent.ini
+grep -Ev '^(#|$)'   /etc/neutron/metadata_agent.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 >   /etc/neutron/metadata_agent.ini
 ```
 
 2. Edit ** /etc/neutron/metadata_agent.ini** sections:
@@ -365,7 +365,7 @@ apt install neutron-linuxbridge-agent -y
 
 ```bash
 cp -p /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak > /etc/neutron/neutron.conf
+grep -Ev '^(#|$)' /etc/neutron/neutron.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/neutron.conf
 ```
 
 3. Edit **/etc/neutron/neutron.conf** sections:
@@ -408,7 +408,7 @@ install -d /var/lib/neutron/tmp -o neutron -g neutron
 
 ```bash
 cp -p /etc/neutron/plugins/ml2/linuxbridge_agent.ini /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak
-grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak > /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+grep -Ev '^(#|$)' /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/neutron/plugins/ml2/linuxbridge_agent.ini
 ```
 
 2. Edit **/etc/neutron/plugins/ml2/linuxbridge_agent.ini** sections:
