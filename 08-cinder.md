@@ -137,19 +137,11 @@ service apache2 restart
 * Install packages:
 
 ```bash
-apt install lvm2 thin-provisioning-tools tgt -y
+apt install lvm2 thin-provisioning-tools -y
 ```
-
-* NOTE: Official docs give conflicting tech stacks. either choose tgt or lio. tgtd usage outlined here, if using lio, then make appropriate changes and may need to install python-rtslib. Had issues using lio, unsure why yet.
 
 ```bash
 apt install cinder-volume -y
-```
-
-* NOTE: if **/etc/tgt/conf.d/cinder.conf** wasn't created:
-
-```bash
-echo 'include /var/lib/cinder/volumes/*' >> /etc/tgt/conf.d/cinder.conf
 ```
 
 * Create LVM volumes. Use appropriate block device name instead of /dev/vdb
@@ -196,7 +188,7 @@ my_ip = 10.10.10.14
 enabled_backends = lvm
 glance_api_servers = http://controller:9292
 
-# comment these out... using tgt here rather than lioadm
+# comment these out... will add in lvm section
 #iscsi_helper = lioadm
 #volume_name_template = volume-%s
 #volume_group = cinder-volumes
@@ -217,8 +209,9 @@ password = password123
 # ...
 volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
 volume_group = cinder-volumes
+volume_name_template = volume-%s
 target_protocol = iscsi
-target_helper = tgtadm
+target_helper = lioadm
 
 [oslo_concurrency]
 # ...
@@ -228,7 +221,8 @@ lock_path = /var/lib/cinder/tmp
 * Finalize Install
 
 ```bash
-service tgt restart
+systemctl enable cinder-volume
+systemctl enable cinder-scheduler
 service cinder-volume restart
 ```
 

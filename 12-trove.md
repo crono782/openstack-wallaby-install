@@ -1,28 +1,83 @@
+# Trove Install
+
+> ![Trove logo](/images/trove.png)
+
+## 1. CONTROLLER NODE
+
+## Database setup
+
+1. Access database as root:
+
+```bash
 mysql
+```
 
+2. Create **trove** database:
+
+```sql
 CREATE DATABASE trove;
+```
 
+3. Grant proper access to **trove** user:
+
+```sql
 GRANT ALL PRIVILEGES ON trove.* TO 'trove'@'localhost' IDENTIFIED BY 'password123';
 GRANT ALL PRIVILEGES ON trove.* TO 'trove'@'%' IDENTIFIED BY 'password123';
 exit
+```
 
+### Create Openstack resources
+
+1. Source .adminrc
+
+```bash
 source .adminrc
+```
 
+2. Create service
+
+```bash
 openstack user create --domain default --password password123 trove
+```
 
+3. Add admin role
+
+```bash
 openstack role add --project service --user trove admin
+```
 
+4. Create service
+
+```bash
 openstack service create --name trove --description "Database" database
+```
 
+5. Create api endpoints
+
+```bash
 for i in public internal admin; do \
   openstack endpoint create --region RegionOne \
   database $i http://controller:8779/v1.0/%\(tenant_id\)s; done
-  
+```
+
+### Install and configure components
+
+1. Install packages
+
+```bash
 apt-get install trove-api trove-taskmanager trove-conductor python3-troveclient -y
+```
 
+2. Backup and sanitize **/etc/trove/trove.conf***
 
-/etc/trove/trove.conf
+```bash
+cp -p /etc/trove/trove.conf /etc/trove/trove.conf.bak
+grep -Ev '^(#|$)' /etc/trove/trove.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/trove/trove.conf
+```
 
+3. Edit **/etc/trove/trove.conf** sections
+
+```yaml
 [DEFAULT]
 log_dir = /var/log/trove
 transport_url = rabbit://openstack:password123@controller:5672
@@ -70,10 +125,18 @@ tcp_ports = 5432
 
 [redis]
 tcp_ports = 6379,16379
+```
 
+4. Backup and sanitize **/etc/trove/trove-guestagent.conf***
 
-/etc/trove/trove-guestagent.conf
+```bash
+cp -p /etc/trove/trove-guestagent.conf /etc/trove/trove-guestagent.conf.bak
+grep -Ev '^(#|$)' /etc/trove/trove-guestagent.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/trove/trove-guestagent.conf
+```
 
+5. Edit **/etc/trove/trove-guestagent.conf** sections
+
+```yaml
 [DEFAULT]
 log_file = trove-guestagent.log
 log_dir = /var/log/trove/
@@ -91,44 +154,61 @@ user_domain_name = Default
 project_name = service
 username = trove
 password = password123
+```
 
+### Populate database
 
-
-
+```bash
 su -s /bin/sh -c "trove-manage db_sync" trove
+```
 
+### Finalize install
 
-
+```bash
 service trove-api restart
 service trove-taskmanager restart
 service trove-conductor restart
+```
 
+### Obtain and upload trove image
 
-
+```bash
 wget https://tarballs.opendev.org/openstack/trove/images/trove-wallaby-guest-ubuntu-bionic.qcow2
 
-openstack image create trove-guest-ubuntu-bionic --file=trove-wallaby-guest-ubuntu-bionic.qcow2 --disk-format=qcow2 --container-format=bare --tag=trove --private 
+openstack image create trove-guest-ubuntu-bionic --file=trove-wallaby-guest-ubuntu-bionic.qcow2 --disk-format=qcow2 --container-format=bare --tag=trove --private
 
 openstack image list
+```
 
-openstack volume type create lvm-trove --private
+### Create dedicated trove volume type
 
-
-
+```bash
 openstack volume type create lvm-trove --private 
+```
 
+### Create mariadb datastore
 
+```bash
+openstack datastore version create 10.3 mariadb mariadb <ID OF UPLOADED IMAGE>
+```
 
-openstack datastore version create 10.3 mariadb mariadb abe2a0a0-c1b7-47f1-8983-d9baf23edc9f
+### Load validation rules
 
-
+```bash
 su -s /bin/sh -c "trove-manage db_load_datastore_config_parameters mariadb 10.3 /usr/lib/python3/dist-packages/trove/templates/mariadb/validation-rules.json"
+```
 
+### Create cloud init for mariadb
 
+1. Create cloudinit directory
+
+```
 mkdir /etc/trove/cloudinit
+```
 
-/etc/trove/cloudinit/mariadb.cloudinit
+2. Create mariadb cloudinit file **/etc/trove/cloudinit/mariadb.cloudinit**
 
+```yaml
 #cloud-config
 write_files:
   - path: /etc/trove/controller.conf
@@ -140,35 +220,49 @@ write_files:
     append: true
 runcmd:
   - chmod 644 /etc/trove/controller.conf
+```
 
+3. Set permissions
 
-
+```
 chown -R trove /etc/trove/cloudinit
+```
 
+### Create appropriate flavor to run db instances
+
+```bash
+openstack flavor create --disk 5 --ram 1024  --vcpus 1 db.m1.small
+```
+
+### Get info and create db instance adjust params to suit
+
+```bash
+
+openstack network list
 
 openstack database instance create mariadb-103 \
-  --flavor m1.small \
+  --flavor db.m1.small \
   --size 1 \
-  --nic net-id=270ab477-71c1-4fe9-b7c4-674d7dd38630 \
+  --nic net-id=<NET ID OF DESIRED NETWORK> \
   --database mydb --users dqueen:password123 \
   --datastore mariadb --datastore-version 10.3 \
   --is-public \
-  --allowed-cidr 10.10.10.0/24 --allowed-cidr 203.0.113.0/24 
-  
- openstack database instance list
+  --allowed-cidr 10.10.10.0/24 --allowed-cidr 203.0.113.0/24
+  ```
+
+### Verify ops
+
+```bash
+openstack database instance list
  
- mysql -h <floating ip> -u user -p
+mysql -h <floating ip> -u user -p
+```
 
-
-# notes
+### NOTES
 if need to debug, create keypair in service project, add "nova_keypair = <name> in trove.conf under [DEFAULT]. update security group rules on generated group in service project to allow ping/ssh. node cannot resolve controller so add to hosts file via cloud init... dont forget to allow traffic via iptables if needed
 
-# some to-dos, investigate better tag based approach to image selection. maybe dedicated trove mgmt network and sec group for better handling. add postgresql and mysql... cinder-scheduler doesn't enable by default
+### TODOs
 
-
-
-
-
-
-
-
+* investigate better tag based approach to image selection.
+* maybe dedicated trove mgmt network and sec group for better handling.
+* add postgresql and mysql

@@ -1,4 +1,6 @@
-# heat install
+# Heat install
+
+> ![Heat logo](/images/heat.png)
 
 ## 1. CONTROLLER NODE
 
@@ -87,13 +89,8 @@ openstack role create heat_stack_user
 1. Install packages:
 
 ```bash
-apt-get install heat-api heat-api-cfn heat-engine -y
-```
-
-* this was required to solve errors for missing modules
-
-```
-apt install python3-vitrageclient python3-zunclient -y
+apt-get install heat-api heat-api-cfn heat-engine \
+python3-vitrageclient python3-zunclient -y
 ```
 
 

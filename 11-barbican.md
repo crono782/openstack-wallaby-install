@@ -1,4 +1,6 @@
-# barbican install
+# Barbican install
+
+> ![Barbican logo](/images/barbican.png)
 
 ## 1. CONTROLLER NODE
 

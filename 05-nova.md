@@ -259,7 +259,13 @@ grep -Ec '(vmx|svm)' /proc/cpuinfo
 virt_type = qemu
 ```
 
-5. Restart compute service:
+5. Remove unsused sqlite db
+
+```
+rm -f /var/lib/nova/nova.sqlite
+```
+
+6. Restart compute service:
 
 ```bash
 service nova-compute restart

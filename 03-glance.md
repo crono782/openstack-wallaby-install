@@ -80,22 +80,18 @@ grep -Ev '^(#|$)' /etc/glance/glance-api.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 
 ```yaml
 [DEFAULT]
 # ...
-# which backends to use key:value pairs
 enabled_backends = file:file
 
 [database]
 # ...
-# remove other connections
 connection = mysql+pymysql://glance:password123@controller/glance
 
 [file]
 # ...
-# file store config
 filesystem_store_datadir = /var/lib/glance/images/
 
 [glance_store]
 # ...
-# basic glance settings
 default_backend = file
 
 [keystone_authtoken]
@@ -124,6 +120,7 @@ su -s /bin/sh -c "glance-manage db_sync" glance
 4. Restart glance api service:
 
 ```bash
+systemctl enable glance-api
 service glance-api restart
 ```
 

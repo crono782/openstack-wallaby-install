@@ -25,7 +25,8 @@ character-set-server = utf8
 3. Finalize MYSQL installation
 
 ```bash
-service mysql restart
+systemctl enable mysql
+systemctl restart mysql
 ```
 
 4. Run mysql setup:
@@ -71,7 +72,8 @@ apt install memcached python3-memcache -y
 3. Finalize installation
 
 ```bash
-service memcached restart
+systemctl enable memcached
+systemctl restart memcached
 ```
 
 ## Etcd

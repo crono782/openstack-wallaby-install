@@ -121,7 +121,13 @@ password = password123
 lock_path = /var/lib/neutron/tmp
 ```
 
-4. Fix packaging bug:
+4. Remove unused sqlite database file:
+
+```bash
+rm -f /var/lib/neutron/neutron.sqlite
+```
+
+5. Fix packaging bug:
 
 ```bash
 install -d /var/lib/neutron/tmp -o neutron -g neutron
@@ -208,7 +214,8 @@ service neutron-server restart
 ```bash
 apt install neutron-server \
 neutron-linuxbridge-agent neutron-l3-agent \
-neutron-dhcp-agent neutron-metadata-agent -y
+neutron-dhcp-agent neutron-metadata-agent \
+python3-neutron-fwaas -y
 ```
 
 2. Backup an sanitize **/etc/neutron/neutron.conf**:
