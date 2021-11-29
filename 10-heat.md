@@ -59,7 +59,7 @@ openstack service create --name heat-cfn \
 ```bash
 for i in public internal admin; \
   do openstack endpoint create --region RegionOne \
-  orchestration $i http://controller:8004/v1/\(tenant_id\)s; \
+  orchestration $i http://controller:8004/v1/%\(tenant_id\)s; \
   done
 
 for i in public internal admin; \
@@ -174,13 +174,27 @@ openstack orchestration service list
 apt install python3-heat-dashboard -y
 ```
 
-2. restart apache
+2. Copy plugin setup files
+
+```bash
+cp /usr/lib/python3/dist-packages/heat_dashboard/enabled/_[0-9]*.py /usr/share/openstack-dashboard/openstack_dashboard/local/enabled/
+```
+
+3. Add policy to horizon settings **/etc/openstack-dashboard/local_settings.py**
+
+```yaml
+POLICY_FILES = {
+    'orchestration': 'heat_policy.json'
+}
+```
+
+4. restart apache
 
 ```
 service apache2 restart
 ```
 
-### Create basic template to **demo.yml**
+### Create basic template to **demo-template.yml**
 
 ```yaml
 heat_template_version: 2021-04-16
@@ -195,6 +209,10 @@ parameters:
     description: Network ID to use for the instance.
 
 resources:
+  my_key:
+    type: OS::Nova::KeyPair
+    properties:
+      name: my_key
   my_instance:
     type: OS::Nova::Server
     properties:
@@ -207,18 +225,16 @@ resources:
 outputs:
   instance_name:
     description: Name of the instance
-    value: { get_attr: [ server, name ]}
+    value: { get_attr: [ my_instance, name ]}
   instance_ip:
     description: IP address of the instance.
-    value: { get_attr: [ server, first_address ] }
+    value: { get_attr: [ my_instance, first_address ] }
 ```
 
-3. create a stack
+3. Create a stack
 
 ```
-export NET_ID=$(openstack network list --name selfservice -c ID -f value)
-
-openstack stack create -t demo-template.yml --parameter "NetID=$NET_ID" stack
+openstack stack create -t demo-template.yml --parameter "NetID=selfservice" stack
 ```
 
 4. Check output

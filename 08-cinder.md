@@ -128,6 +128,7 @@ os_region_name = RegionOne
 
 ```bash
 service nova-api restart
+systemctl enable cinder-scheduler
 service cinder-scheduler restart
 service apache2 restart
 ```
@@ -222,7 +223,6 @@ lock_path = /var/lib/cinder/tmp
 
 ```bash
 systemctl enable cinder-volume
-systemctl enable cinder-scheduler
 service cinder-volume restart
 ```
 
@@ -238,4 +238,70 @@ openstack volume create --size 1 test-vol
 openstack volume list
 
 openstack volume delete test-vol
+```
+
+### Configure Backup Service
+
+* Do this AFTER swift install
+
+1. Install packages
+
+```bash
+apt install cinder-backup -y
+```
+
+2. Get swift url
+
+```bash
+openstack catalog show object-store
+```
+
+3. Edit **/etc/cinder/cinder.conf**:
+
+```yaml
+[DEFAULT]
+# ...
+backup_driver = cinder.backup.drivers.swift.SwiftBackupDriver
+backup_swift_url = SWIFT_URL
+swift_catalog_info = object-store:swift:publicURL
+```
+
+4. Finalize install
+
+```bash
+systemctl enable cinder-backup
+service cinder-backup restart
+```
+
+### Enable backups in horizon
+
+1. Modify settings in **/etc/openstack-dashboard/local_settings.py**:
+
+```yaml
+
+OPENSTACK_CINDER_FEATURES = {
+  "enable_backup": True
+}
+```
+
+```bash
+service apache2 restart
+```
+
+5. Verify ops
+
+```bash
+sourc ~/.adminrc
+
+openstack volume create --size 1 bu-test-vol
+
+openstack volume backup create --name bu-test-vol-backup bu-test-vol
+
+openstack volume backup list
+
+openstack container list
+
+openstack volume backup delete bu-test-vol-backup
+
+openstack volume delete bu-test-vol
 ```

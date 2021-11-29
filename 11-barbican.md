@@ -131,6 +131,8 @@ su -s /bin/sh -c "barbican-manage db upgrade" barbican
 ### finalize install
 
 ```
+systemctl enable barbican-keystone-listener
+systemctl enable barbican-worker
 service barbican-keystone-listener restart
 service barbican-worker restart
 service apache2 restart
