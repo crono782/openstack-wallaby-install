@@ -172,9 +172,44 @@ service trove-conductor restart
 
 ### Obtain and upload trove image
 
+1. Obtain image
+
 ```bash
 wget https://tarballs.opendev.org/openstack/trove/images/trove-wallaby-guest-ubuntu-bionic.qcow2
+```
 
+* HOTFIX: Fix trove backups
+
+Since the move to docker-based databases in a single image, an issue has arisen where trove backups will complete, however the status check is broken with the new implementation. Changes have not made it to stable branch as of this writing. Fixing this yourself requires some sort of code injection which can be done a number of ways. Here, will used guestfish to mount the image and inject the fix here. See the proposed fix: https://review.opendev.org/c/openstack/trove/+/807474
+
+```bash
+guestfish -rw -a trove-wallaby-guest-ubuntu-bionic.qcow2
+
+run
+
+mount /dev/sda1 /
+
+edit /opt/guest-agent-venv/lib/python3.6/site-packages/trove/guestagent/datastore/service.py
+
+# on or around line 491, remove:
+# result = output[-1]
+
+# on or around line 497, remove:
+# backup_result = BACKUP_LOG_RE.match(result)
+# and replace with (ensure good indentation)
+            backup_result = None
+            output.reverse()
+            for result in output:
+                backup_result = BACKUP_LOG_RE.match(result)
+                if backup_result:
+                    break
+
+exit
+```
+
+2. Upload trove service image to glance
+
+```bash
 openstack image create trove-guest-ubuntu-bionic --file=trove-wallaby-guest-ubuntu-bionic.qcow2 --disk-format=qcow2 --container-format=bare --tag=trove --private
 
 openstack image list
@@ -189,7 +224,7 @@ openstack volume type create lvm-trove --private
 ### Create mariadb datastore
 
 ```bash
-openstack datastore version create 10.3 mariadb mariadb <ID OF UPLOADED IMAGE>
+openstack datastore version create 10.3 mariadb mariadb '' --image-tags trove --active
 ```
 
 ### Load validation rules
@@ -203,7 +238,7 @@ su -s /bin/sh -c "trove-manage db_load_datastore_config_parameters mariadb 10.3 
 1. Create cloudinit directory
 
 ```
-mkdir /etc/trove/cloudinit
+install -d /etc/trove/cloudinit -o trove -g trove
 ```
 
 2. Create mariadb cloudinit file **/etc/trove/cloudinit/mariadb.cloudinit**
@@ -214,7 +249,7 @@ write_files:
   - path: /etc/trove/controller.conf
     content: |
       CONTROLLER=10.10.10.11
-  - path: /ec/hosts
+  - path: /etc/hosts
     content: |
       10.10.10.11 controller
     append: true
@@ -225,7 +260,7 @@ runcmd:
 3. Set permissions
 
 ```
-chown -R trove /etc/trove/cloudinit
+chown -R trove:trove /etc/trove/cloudinit
 ```
 
 ### Create appropriate flavor to run db instances
