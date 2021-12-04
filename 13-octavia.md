@@ -157,49 +157,9 @@ openstack keypair create octavia-mgmt
 
 ### Network setup
 
-1. Create dhcp config
+1. Create LB network
 
-```
-sudo mkdir -m755 -p /etc/dhcp/octavia
-sudo cp octavia/etc/dhcp/dhclient.conf /etc/dhcp/octavia
-```
-
-2. Create LB network (scary!)
-
-```
-OCTAVIA_MGMT_SUBNET=172.16.0.0/24
-OCTAVIA_MGMT_SUBNET_START=172.16.0.100
-OCTAVIA_MGMT_SUBNET_END=172.16.0.254
-OCTAVIA_MGMT_PORT_IP=172.16.0.2
-
-openstack network create lb-mgmt-net
-openstack subnet create --subnet-range $OCTAVIA_MGMT_SUBNET --allocation-pool \
-  start=$OCTAVIA_MGMT_SUBNET_START,end=$OCTAVIA_MGMT_SUBNET_END \
-  --network lb-mgmt-net lb-mgmt-subnet
-
-SUBNET_ID=$(openstack subnet show lb-mgmt-subnet -f value -c id)
-PORT_FIXED_IP="--fixed-ip subnet=$SUBNET_ID,ip-address=$OCTAVIA_MGMT_PORT_IP"
-
-MGMT_PORT_ID=$(openstack port create --security-group \
-  lb-health-mgr-sec-grp --device-owner Octavia:health-mgr \
-  --host=$(hostname) -c id -f value --network lb-mgmt-net \
-  $PORT_FIXED_IP octavia-health-manager-listen-port)
-
-MGMT_PORT_MAC=$(openstack port show -c mac_address -f value \
-  $MGMT_PORT_ID)
-
-sudo ip link add o-hm0 type veth peer name o-bhm0
-NETID=$(openstack network show lb-mgmt-net -c id -f value)
-BRNAME=brq$(echo $NETID|cut -c 1-11)
-sudo brctl addif $BRNAME o-bhm0
-sudo ip link set o-bhm0 up
-
-sudo ip link set dev o-hm0 address $MGMT_PORT_MAC
-sudo iptables -I INPUT -i o-hm0 -p udp --dport 5555 -j ACCEPT
-sudo dhclient -v o-hm0 -cf /etc/dhcp/octavia
-```
-
-* perhaps a better method here?
+* Similar method that does not involve dhclient as shown in docs. This works better and doesn't lock my system.
 
 ```
 NETID=$(openstack network show lb-mgmt-net -c id -f value)
@@ -220,7 +180,75 @@ brctl addif $BRNAME o-bhm0
 iptables -I INPUT -i o-hm0 -p udp --dport 5555 -j ACCEPT
 ```
 
-* Things tend to go screwy here after running dhclient. Still need to figure out real fix. rebooting then restarting neutron services seems to help. Investigate further.
+2. Create network startup files.
+
+* Create **/opt/octavia-interface.sh** (sub values for real ones)
+
+```bash
+#!/bin/bash
+
+set -ex
+
+MAC=$MGMT_PORT_MAC
+BRNAME=$BRNAME
+
+if [ "$1" == "start" ]; then
+  ip link add o-hm0 type veth peer name o-bhm0
+  ip link set dev o-hm0 address $MAC
+  ip link set o-hm0 up
+  ip link set o-bhm0 up
+  ip addr add $OCTAVIA_MGMT_PORT/24 dev o-hm0
+  brctl addif $BRNAME o-bhm0
+  iptables -I INPUT -i o-hm0 -p udp --dport 5555 -j ACCEPT
+elif [ "$1" == "stop" ]; then
+  ip link del o-hm0
+else
+  brctl show $BRNAME
+  ip a s dev o-hm0
+fi
+```
+
+* Set permissions
+
+```bash
+chmod o+x /opt/octavia-interface.sh
+```
+
+* Create systemd unit file **/etc/systemd/system/octavia-interface.service**
+
+```yaml
+[Unit]
+Description=Octavia Interface Creator
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/opt/octavia-interface.sh start
+ExecStop=/opt/octavia-interface.sh stop
+```
+
+* Interface service target cannot start until Neutron has had sufficient time to process and bring up networks. Configure a systemd timer unit file **/etc/systemd/system/octavia-interface.timer**
+
+```yaml
+[Unit]
+Description=Time for Octavia Interface Creator
+Requires=neutron-linuxbridge-agent.service
+After=neutron-linuxbridge-agent.service
+
+[Timer]
+OnBootSec=5min
+
+[Install]
+WantedBy=timers.target
+```
+
+* Disable service unit and enable timer unit
+
+```bash
+systemctl daemon-reload
+systemctl disable octavia-interface.service
+systemctl enable  octavia-interface.timer
+```
 
 ### config files
 
@@ -243,9 +271,10 @@ ca_certificate = /etc/octavia/certs/server_ca.cert.pem
 [controller_worker]
 client_ca = /etc/octavia/certs/client_ca.cert.pem
 
-amp_image_owner_id = 86e49ccf2d874fff8981f746fcc05198
+amp_image_owner_id = <service project id>
 amp_image_tag = amphora
-amp_ssh_key_name = octavia-mgmt # for testing
+# key only for testing
+amp_ssh_key_name = octavia-mgmt
 amp_secgroup_list = <lb-mgmt-sec-grp-id>
 amp_boot_network_list = <lb-mgmt-net-id>
 amp_flavor_id = 200
@@ -261,6 +290,8 @@ server_ca = /etc/octavia/certs/server_ca-chain.cert.pem
 client_cert = /etc/octavia/certs/private/client.cert-and-key.pem
 
 [health_manager]
+# this option missing from docs
+heartbeat_key = insecure-key
 bind_ip = 0.0.0.0
 bind_port = 5555
 controller_ip_port_list = 172.16.0.2:5555
@@ -302,11 +333,112 @@ octavia-db-manage --config-file /etc/octavia/octavia.conf upgrade head
 systemctl restart octavia-api octavia-health-manager octavia-housekeeping octavia-worker
 ```
 
+### Install horizon dashboard for octavia
+
+```
+apt intall python3-octavia-dashboard -y
+
+service apache2 restart
+```
+
+### Create loadbalancer
+
+1. Create two instances responding to http port 80 traffic. Be sure to allow port 80 on local private subnet
+
+```bash
+# can use this snippet on cirros instances since no web server available
+while true; do echo -e "HTTP/1.1 200 OK\r\n\r\n$(hostname)" | sudo nc -l -p 80; done
+```
+
+2. Create loadbalancer
+
+```
+openstack loadbalancer create --name lb01 --vip-subnet-id private-subnet
+```
+
+2. Create listener
+
+```
+openstack loadbalancer listener create --name listener01 --protocol TCP --protocol-port 80 lb01
+```
+
+3. Create pool
+
+```
+openstack loadbalancer pool create --name pool01 --lb-algorithm ROUND_ROBIN --listener listener01 --protocol TCP
+```
+
+4. Create pool members
+
+```
+openstack loadbalancer member create --subnet-id private-subnet --address <server ip> --protocol-port 80 pool01
+
+openstack loadbalancer member create --subnet-id private-subnet --address <server ip> --protocol-port 80 pool01
+```
+
+5. Create floating ip for load balancer
+
+```
+openstack floating ip create provider
+```
+
+6. Assign floating ip to loadbalancer vip port
+
+```
+VIPPORT=$(openstack loadbalancer show lb01 | grep vip_port_id | awk {'print $4'})
+openstack floating ip set --port $VIPPORT <floating ip>
+```
+
+7. Test from public side
+
+Use web browser or curl to hit floating ip/vip address. should show switching from one lb member to another
 
 
+### Appendix
 
+* This is the method in documentation AND devstack for building the network injector. Locks my system though. Only including here for doc purposes. Don't use this!
 
+* Create dhcp config
 
+```
+sudo mkdir -m755 -p /etc/dhcp/octavia
+sudo cp octavia/etc/dhcp/dhclient.conf /etc/dhcp/octavia
+```
+
+* Build network injector
+
+```
+OCTAVIA_MGMT_SUBNET=172.16.0.0/24
+OCTAVIA_MGMT_SUBNET_START=172.16.0.100
+OCTAVIA_MGMT_SUBNET_END=172.16.0.254
+OCTAVIA_MGMT_PORT_IP=172.16.0.2
+
+openstack network create lb-mgmt-net
+openstack subnet create --subnet-range $OCTAVIA_MGMT_SUBNET --allocation-pool \
+  start=$OCTAVIA_MGMT_SUBNET_START,end=$OCTAVIA_MGMT_SUBNET_END \
+  --network lb-mgmt-net lb-mgmt-subnet
+
+SUBNET_ID=$(openstack subnet show lb-mgmt-subnet -f value -c id)
+PORT_FIXED_IP="--fixed-ip subnet=$SUBNET_ID,ip-address=$OCTAVIA_MGMT_PORT_IP"
+
+MGMT_PORT_ID=$(openstack port create --security-group \
+  lb-health-mgr-sec-grp --device-owner Octavia:health-mgr \
+  --host=$(hostname) -c id -f value --network lb-mgmt-net \
+  $PORT_FIXED_IP octavia-health-manager-listen-port)
+
+MGMT_PORT_MAC=$(openstack port show -c mac_address -f value \
+  $MGMT_PORT_ID)
+
+sudo ip link add o-hm0 type veth peer name o-bhm0
+NETID=$(openstack network show lb-mgmt-net -c id -f value)
+BRNAME=brq$(echo $NETID|cut -c 1-11)
+sudo brctl addif $BRNAME o-bhm0
+sudo ip link set o-bhm0 up
+
+sudo ip link set dev o-hm0 address $MGMT_PORT_MAC
+sudo iptables -I INPUT -i o-hm0 -p udp --dport 5555 -j ACCEPT
+sudo dhclient -v o-hm0 -cf /etc/dhcp/octavia
+```
 
 
 
