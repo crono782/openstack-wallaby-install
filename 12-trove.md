@@ -2,6 +2,8 @@
 
 > ![Trove logo](/images/trove.png)
 
+* TODO: Split into multinode install
+
 ## 1. CONTROLLER NODE
 
 ## Database setup
@@ -68,7 +70,7 @@ for i in public internal admin; do \
 apt-get install trove-api trove-taskmanager trove-conductor python3-troveclient -y
 ```
 
-2. Backup and sanitize **/etc/trove/trove.conf***
+2. Backup and sanitize **/etc/trove/trove.conf**
 
 ```bash
 cp -p /etc/trove/trove.conf /etc/trove/trove.conf.bak

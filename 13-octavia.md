@@ -2,6 +2,8 @@
 
 > ![Octavia logo](/images/octavia.png)
 
+* TODO: Split into multinode install
+
 ## 1. CONTROLLER NODE
 
 ### Database setup
@@ -243,6 +245,15 @@ systemctl enable  octavia-interface.timer
 ```
 
 ### config files
+
+1. Backup and sanitize **/etc/octavia/octavia.conf**
+
+```bash
+cp -p /etc/octavia/octavia.conf /etc/octavia/octavia.conf.bak
+grep -Ev '^(#|$)' /etc/octavia/octavia.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/octavia/octavia.conf
+```
+
+2. Modify **/etc/octavia/octavia.conf**
 
 ```yaml
 [DEFAULT]
