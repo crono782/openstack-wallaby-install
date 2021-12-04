@@ -1,5 +1,7 @@
 # Octavia Install
 
+> ![Octavia logo](/images/octavia.png)
+
 ## 1. CONTROLLER NODE
 
 ### Database setup
