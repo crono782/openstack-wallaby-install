@@ -68,19 +68,7 @@ apt install octavia-api octavia-health-manager octavia-housekeeping octavia-work
 
 ### Build amphora image
 
-* Option 1. Uses a snap. Much less involved, but produces larger image
-
-```bash
-snap install octavia-diskimage-retrofit --beta --devmode
-
-cd /var/snap/octavia-diskimage-retrofit/common/tmp
-
-wget https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
-
-octavia-diskimage-retrofit ubuntu-20.04-minimal-cloudimg-amd64.img ubuntu-amphora-haproxy-amd64.qcow2
-```
-
-* Option 2. Uses build script. More control and produces smaller image
+* Uses build script. More control and produces smaller image. Alternative method using snap in appendix.
 
 ```bash
 
@@ -108,7 +96,7 @@ source ~/.octavia-openrc
 
 ```bash
 openstack image create --disk-format qcow2 --container-format bare \
-  --private --tag amphora --file ubuntu-amphora-haproxy-amd64.qcow2 ubuntu-amphora-x64-haproxy
+  --private --tag amphora --file amphora--x64-haproxy.qcow2 amphora-x64-haproxy
 ```
 
 ### Create amphora flavor (may need 5G size if used snap builder)
@@ -123,7 +111,9 @@ openstack flavor create --id 200 --vcpus 1 --ram 1024 \
 ```bash
 sudo mkdir -p /etc/octavia/certs/private
 sudo chmod 755 /etc/octavia -R
-git clone https://opendev.org/openstack/octavia.git
+cd ~
+# only need to clone if didn't do it before
+git clone https://opendev.org/openstack/octavia.git --branch stable/wallaby
 cd octavia/bin/
 source create_dual_intermediate_CA.sh
 sudo cp -p etc/octavia/certs/server_ca.cert.pem /etc/octavia/certs
@@ -131,7 +121,7 @@ sudo cp -p etc/octavia/certs/server_ca-chain.cert.pem /etc/octavia/certs
 sudo cp -p etc/octavia/certs/server_ca.key.pem /etc/octavia/certs/private
 sudo cp -p etc/octavia/certs/client_ca.cert.pem /etc/octavia/certs
 sudo cp -p etc/octavia/certs/client.cert-and-key.pem /etc/octavia/certs/private
-chown -R octavia /etc/octavia/certs
+chown -R octavia:octavia /etc/octavia/certs
 ```
 
 ### Create sec group and rules
@@ -161,7 +151,7 @@ openstack keypair create octavia-mgmt
 
 1. Create LB network
 
-* Similar method that does not involve dhclient as shown in docs. This works better and doesn't lock my system.
+* Different method than show in docs or devstack. This doesn't use dhclient. Works better for me and doesn't lock my system.
 
 ```
 NETID=$(openstack network show lb-mgmt-net -c id -f value)
@@ -229,7 +219,7 @@ ExecStart=/opt/octavia-interface.sh start
 ExecStop=/opt/octavia-interface.sh stop
 ```
 
-* Interface service target cannot start until Neutron has had sufficient time to process and bring up networks. Configure a systemd timer unit file **/etc/systemd/system/octavia-interface.timer**
+* Interface service target cannot start until Neutron has had sufficient time to process and bring up networks. May need to adjust timer to suit. Configure a systemd timer unit file **/etc/systemd/system/octavia-interface.timer**
 
 ```yaml
 [Unit]
@@ -398,6 +388,18 @@ Use web browser or curl to hit floating ip/vip address. should show switching fr
 
 ### Appendix
 
+* Alternative method of building amphora using a snap. Easier, but produces larger image
+
+```bash
+snap install octavia-diskimage-retrofit --beta --devmode
+
+cd /var/snap/octavia-diskimage-retrofit/common/tmp
+
+wget https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
+
+octavia-diskimage-retrofit ubuntu-20.04-minimal-cloudimg-amd64.img ubuntu-amphora-haproxy-amd64.qcow2
+```
+
 * This is the method in documentation AND devstack for building the network injector. Locks my system though. Only including here for doc purposes. Don't use this!
 
 * Create dhcp config
@@ -441,7 +443,3 @@ sudo ip link set dev o-hm0 address $MGMT_PORT_MAC
 sudo iptables -I INPUT -i o-hm0 -p udp --dport 5555 -j ACCEPT
 sudo dhclient -v o-hm0 -cf /etc/dhcp/octavia
 ```
-
-
-
-
