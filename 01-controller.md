@@ -25,8 +25,8 @@ character-set-server = utf8
 3. Finalize MYSQL installation
 
 ```bash
-systemctl enable mysql
-systemctl restart mysql
+systemctl enable mariadb
+systemctl restart mariadb
 ```
 
 4. Run mysql setup:

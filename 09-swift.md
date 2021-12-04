@@ -90,7 +90,7 @@ account_autocreate = True
 [filter:keystoneauth]
 use = egg:swift#keystoneauth
 #...
-operator_roles = admin,user
+operator_roles = admin,member
 
 [filter:authtoken]
 paste.filter_factory = keystonemiddleware.auth_token:filter_factory

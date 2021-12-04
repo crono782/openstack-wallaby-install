@@ -130,14 +130,12 @@ openstack project create --domain default \
 
 openstack user create --domain default \
   --password password123 demouser
-
-openstack role create demorole
 ```
 
-4. Assign demorole to demoproject and demouser
+4. Assign member role demouser in demo project
 
 ```bash
-openstack role add --project demoproject --user demouser demorole
+openstack role add --project demoproject --user demouser member
 ```
 
 ### Create demo RC file

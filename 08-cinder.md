@@ -264,6 +264,10 @@ openstack catalog show object-store
 backup_driver = cinder.backup.drivers.swift.SwiftBackupDriver
 backup_swift_url = SWIFT_URL
 swift_catalog_info = object-store:swift:publicURL
+
+# OR WAY SIMPLER TO USE FILE BASED BACKUPS FOR TESTING
+
+backup_driver = cinder.backup.drivers.posix.PosixBackupDriver
 ```
 
 4. Finalize install

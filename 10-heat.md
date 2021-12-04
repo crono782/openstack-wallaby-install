@@ -213,16 +213,21 @@ resources:
     type: OS::Nova::KeyPair
     properties:
       name: my_key
+      save_private_key: true
+
   my_instance:
     type: OS::Nova::Server
     properties:
-      key_name: my_key
+      key_name: { get_resource: my_key }
       image: cirros
       flavor: m1.micro
       networks:
         - network: { get_param: NetID }
 
 outputs:
+  private_key:
+    description: Private key
+    value: { get_attr: [ my_key, private_key ] }
   instance_name:
     description: Name of the instance
     value: { get_attr: [ my_instance, name ]}

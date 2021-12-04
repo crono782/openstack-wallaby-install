@@ -183,7 +183,9 @@ wget https://tarballs.opendev.org/openstack/trove/images/trove-wallaby-guest-ubu
 Since the move to docker-based databases in a single image, an issue has arisen where trove backups will complete, however the status check is broken with the new implementation. Changes have not made it to stable branch as of this writing. Fixing this yourself requires some sort of code injection which can be done a number of ways. Here, will used guestfish to mount the image and inject the fix here. See the proposed fix: https://review.opendev.org/c/openstack/trove/+/807474
 
 ```bash
-guestfish -rw -a trove-wallaby-guest-ubuntu-bionic.qcow2
+apt install libguestfs-tools -y
+
+guestfish --rw -a trove-wallaby-guest-ubuntu-bionic.qcow2
 
 run
 
@@ -224,13 +226,13 @@ openstack volume type create lvm-trove --private
 ### Create mariadb datastore
 
 ```bash
-openstack datastore version create 10.3 mariadb mariadb '' --image-tags trove --active
+openstack datastore version create 10.4 mariadb mariadb '' --image-tags trove --active
 ```
 
 ### Load validation rules
 
 ```bash
-su -s /bin/sh -c "trove-manage db_load_datastore_config_parameters mariadb 10.3 /usr/lib/python3/dist-packages/trove/templates/mariadb/validation-rules.json"
+su -s /bin/sh -c "trove-manage db_load_datastore_config_parameters mariadb 10.4 /usr/lib/python3/dist-packages/trove/templates/mariadb/validation-rules.json"
 ```
 
 ### Create cloud init for mariadb
