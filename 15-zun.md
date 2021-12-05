@@ -42,7 +42,7 @@ echo \
 
 ```
 apt-get update
-apt-get install docker-ce docker-ce-cli containerd.io
+apt-get install docker-ce docker-ce-cli containerd.io -y
 ```
 
 # Install Kuryr-libnetwork
@@ -60,7 +60,7 @@ openstack user create --domain default --password password123 kuryr
 ```
 
 ```bash
-openstack role add --project service --user zuryr admin
+openstack role add --project service --user kuryr admin
 ```
 
 ## 2. COMPUTE NODE
@@ -86,6 +86,8 @@ chown kuryr:kuryr /etc/kuryr
 1. Clone and install kuryr-libnetwork code
 
 ```
+apt-get install python3-pip -y
+
 cd /var/lib/kuryr
 
 git clone https://opendev.org/openstack/kuryr-libnetwork.git --branch stable/wallaby
@@ -94,7 +96,7 @@ chown -R kuryr:kuryr kuryr-libnetwork
 
 cd kuryr-libnetwork
 
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 python3 setup.py install
 ```
@@ -112,8 +114,8 @@ su -s /bin/sh -c "cp etc/kuryr.conf.sample \
 1. Backup and sanitize **/etc/kuryr/kuryr.conf**
 
 ```bash
-cp -p /etc/zun/zun.conf /etc/zun/zun.conf.bak
-grep -Ev '^(#|$)' /etc/zun/zun.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/zun/zun.conf
+cp -p /etc/kuryr/kuryr.conf /etc/kuryr/kuryr.conf.bak
+grep -Ev '^(#|$)' /etc/kuryr/kuryr.conf.bak|sed '/^\[.*]/i \ '|tail -n +2 > /etc/kuryr/kuryr.conf
 ```
 
 2. Modify **/etc/kuryr/kuryr.conf**
@@ -351,6 +353,12 @@ wsproxy_port = 6784
 base_url = ws://controller:6784/
 ```
 
+3. Fix packaging bug
+
+```
+install -d /var/lib/zun/tmp -o zun -g zun
+```
+
 ### Populate database
 
 ```bash
@@ -433,7 +441,7 @@ chown zun:zun /etc/cni/net.d
 1. Install prereq packages
 
 ```
-apt-get install git numactl
+apt-get install git numactl -y
 ```
 
 2. Clone and install zun
@@ -656,7 +664,7 @@ systemctl start zun-cni-daemon
 1. Install client
 
 ```
-apt install python3-zunclient
+apt install python3-zunclient -y
 ```
 
 2. Source admin credentials
@@ -681,17 +689,26 @@ source ~/.demorc
 
 ```
 NET_ID=$(openstack network list | awk '/ selfservice / { print $2 }')
-openstack appcontainer run --name container --net network-$NETID cirros ping 8.8.8.8
+openstack appcontainer run --name container --net network=$NETID cirros ping 8.8.8.8
 
 openstack appcontainer list
 
 openstack appcontainer exec --interactive container /bin/sh
-ping -c 4 openstack.org
+ping -c 4 google.com
 exit
 
 openstack appcontainer stop container
 openstack appcontainer delete container
+
+openstack appcontainer run --name webcontainer --net network=$NETID --expose 80 httpd
+
+openstack floating ip create provider
+
+openstack appcontainer add floating ip <ip address>
+
+# test web server container from browser
+
+openstack appcontainer delete webcontainer
+
 ```
-
-
-
+ 
